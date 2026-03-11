@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fase 01 — Atendimento Automático | Dra. Ludmila</title>
+    <title>Fase 01 — Atendimento Automático (v7) | Dra. Ludmila</title>
     <!-- Add Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link
@@ -795,7 +795,7 @@
 
     <main class="main">
         <section class="hero">
-            <div class="hero-badge">Fase 01 — 1ª Entrega</div>
+            <div class="hero-badge">Fase 01 — 1ª Entrega (v7)</div>
             <h1>Atendimento Automático<br>com IA de Vendas</h1>
             <p>Cada etapa abaixo leva sua clínica do zero até o bot funcionando e atendendo pacientes reais 24 horas por
                 dia.</p>
@@ -837,6 +837,8 @@
     </div>
 
     <script>
+        console.log("Script init...");
+        try {
         const STORAGE_KEY = 'fase01_Ludmila_v6';
         let pendingConfirm = null;
 
@@ -1284,6 +1286,11 @@
         window.addEtapa = addEtapa;
         window.deleteEtapa = deleteEtapa;
         window.closeModal = closeModal;
+        console.log("Script evaluate finished successfully.");
+        } catch (globalErr) {
+            console.error("GLOBAL CRASH:", globalErr);
+            document.getElementById('etapasContainer').innerHTML = `<div style="color:red; font-size: 20px; padding: 50px;"><b>Fatal Error:</b> ${globalErr.message}<br><pre>${globalErr.stack}</pre></div>`;
+        }
     </script>
 </body>
 
