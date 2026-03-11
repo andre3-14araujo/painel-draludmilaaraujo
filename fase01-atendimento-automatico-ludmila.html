@@ -899,12 +899,20 @@
         
         const supabaseUrl = 'https://yebprrwkxowepzhbyinw.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllYnBycndreG93ZXB6aGJ5aW53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDA5MTMsImV4cCI6MjA4ODc3NjkxM30.8mg39RLD3H-abVsttVyGJSmu4K2gvJDQX-V1ncflpdE'; // Usando a Anon Key para frontend
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        let supabase = null;
+        try {
+            if (window.supabase) {
+                supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            } else {
+                console.warn("Script do Supabase não foi carregado.");
+            }
+        } catch(e) { console.error("Erro na inicialização Supabase:", e); }
 
         const RECORD_ID = 'ludmila_v1';
         let currentData = { etapas: JSON.parse(JSON.stringify(DEFAULT_ETAPAS)), checks: {} };
 
         async function createInitialRecord() {
+            if (!supabase) return;
             try {
                 const { error } = await supabase.from('panel_data').insert({ id: RECORD_ID, state: currentData });
                 if (error) console.error("Erro ao criar registro. Verifique se RLS (Row Level Security) está desabilitado no Supabase.", error);
@@ -914,6 +922,11 @@
         }
 
         async function loadDataFromSupabase() {
+            if (!supabase) {
+                 showToast("Modo offline (Sem nuvem)");
+                 loadLocalData();
+                 return;
+            }
             showToast("Verificando nuvem...");
             try {
                 const { data, error } = await supabase
@@ -971,6 +984,8 @@
             // Backup local
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
             
+            if (!supabase) return;
+            
             // Push to Supabase
             const { error } = await supabase
                 .from('panel_data')
@@ -985,6 +1000,7 @@
         }
 
         function setupRealtimeSubscription() {
+            if (!supabase) return;
             supabase
               .channel('panel_updates')
               .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'panel_data', filter: `id=eq.${RECORD_ID}` }, payload => {
