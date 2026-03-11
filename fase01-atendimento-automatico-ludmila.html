@@ -906,7 +906,8 @@
 
         async function createInitialRecord() {
             try {
-                await supabase.from('panel_data').insert({ id: RECORD_ID, state: currentData });
+                const { error } = await supabase.from('panel_data').insert({ id: RECORD_ID, state: currentData });
+                if (error) console.error("Erro ao criar registro. Verifique se RLS (Row Level Security) está desabilitado no Supabase.", error);
             } catch (e) {
                 console.error("Erro ao criar registro inicial", e);
             }
@@ -926,9 +927,9 @@
                     await createInitialRecord();
                 } else {
                     console.error("Erro ao carregar dados do Supabase:", error);
-                    showToast("Erro de sincronização. Usando offline.");
-                    loadLocalData();
+                    showToast("Ative acesso público no Supabase (RLS)");
                 }
+                loadLocalData(); // Always fill with something (local or defaults)
             } else if (data && data.state) {
                 currentData = data.state;
                 // Merge with DEFAULT_ETAPAS in case definitions changed in HTML but DB is old
@@ -941,8 +942,15 @@
         function loadLocalData() {
             try {
                 const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) currentData = JSON.parse(saved);
-            } catch { }
+                if (saved) {
+                    currentData = JSON.parse(saved);
+                } else {
+                    // Force populate defaults if both Supabase and LocalStorage are empty
+                    currentData = { etapas: JSON.parse(JSON.stringify(DEFAULT_ETAPAS)), checks: {} };
+                }
+            } catch { 
+                 currentData = { etapas: JSON.parse(JSON.stringify(DEFAULT_ETAPAS)), checks: {} };
+            }
             render();
         }
 
