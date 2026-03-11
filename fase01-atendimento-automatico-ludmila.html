@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fase 01 — Atendimento Automático | Dra. Ludmila</title>
+    <!-- Add Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #FAFAF6;
+            --bg-card: #FFFFFF;
+            --bg-card-hover: #F5F5F0;
+            --accent-green: #2D8C4E;
+            --accent-green-light: #3DA563;
+            --accent-green-soft: rgba(45, 140, 78, 0.08);
+            --accent-green-border: rgba(45, 140, 78, 0.15);
+            --accent-gold: #B8860B;
+            --accent-gold-light: #D4A437;
+            --accent-gold-soft: rgba(184, 134, 11, 0.07);
+            --accent-gold-border: rgba(184, 134, 11, 0.14);
+            --accent-red: #DC2626;
+            --accent-red-soft: rgba(220, 38, 38, 0.06);
+            --accent-red-border: rgba(220, 38, 38, 0.12);
+            --text-primary: #1A1A1A;
+            --text-secondary: #555555;
+            --text-muted: #999999;
+            --border: #E8E8E3;
+            --border-active: #D5D5CF;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+            --radius-lg: 16px;
+            --radius-md: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ========== HEADER ========== */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(250, 250, 246, 0.82);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 0;
+        }
+
+        .header-inner {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-gold-light));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .header-title {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .header-subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .header-progress {
+            text-align: right;
+        }
+
+        .progress-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .progress-bar-container {
+            width: 140px;
+            height: 5px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-gold-light));
+            border-radius: 3px;
+            transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .progress-text {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-green);
+            margin-top: 4px;
+        }
+
+        /* ========== MAIN ========== */
+        .main {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 48px 24px 120px;
+        }
+
+        /* ========== HERO ========== */
+        .hero {
+            text-align: center;
+            margin-bottom: 56px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 20px;
+            background: var(--accent-gold-soft);
+            color: var(--accent-gold);
+            border: 1px solid var(--accent-gold-border);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .hero h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.035em;
+            line-height: 1.25;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            max-width: 500px;
+            margin: 0 auto 32px;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent-green);
+            letter-spacing: -0.03em;
+        }
+
+        .hero-stat-value.gold {
+            color: var(--accent-gold);
+        }
+
+        .hero-stat-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 500;
+        }
+
+        /* ========== ETAPA ========== */
+        .etapa-section {
+            margin-bottom: 44px;
+        }
+
+        .etapa-header {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px 24px 20px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+
+        .etapa-header:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .etapa-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--border);
+            border-radius: 0 2px 2px 0;
+        }
+
+        .etapa-header.completed::before {
+            background: var(--accent-green);
+        }
+
+        .etapa-header.active::before {
+            background: var(--accent-gold);
+        }
+
+        .etapa-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-left: 4px;
+        }
+
+        .etapa-number {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 4px;
+        }
+
+        .etapa-header.completed .etapa-number {
+            color: var(--accent-green);
+        }
+
+        .etapa-actions {
+            display: flex;
+            gap: 6px;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .etapa-header:hover .etapa-actions {
+            opacity: 1;
+        }
+
+        /* ========== EDITABLE FIELDS ========== */
+        .editable {
+            cursor: text;
+            border-radius: 4px;
+            padding: 2px 4px;
+            margin: -2px -4px;
+            transition: background 0.15s;
+            outline: none;
+        }
+
+        .editable:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .editable:focus {
+            background: #FFF;
+            box-shadow: 0 0 0 2px var(--accent-gold-border);
+        }
+
+        .etapa-title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+            margin-left: 4px;
+            display: block;
+        }
+
+        .etapa-subtitle {
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-left: 4px;
+            line-height: 1.5;
+            display: block;
+        }
+
+        .etapa-subtitle strong {
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        .etapa-meta {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            margin-left: 4px;
+            flex-wrap: wrap;
+        }
+
+        .etapa-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            font-size: 10px;
+            font-weight: 500;
+            border-radius: 16px;
+        }
+
+        .etapa-badge.status-done {
+            background: var(--accent-green-soft);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green-border);
+        }
+
+        .etapa-badge.status-active {
+            background: var(--accent-gold-soft);
+            color: var(--accent-gold);
+            border: 1px solid var(--accent-gold-border);
+        }
+
+        .etapa-badge.status-pending {
+            background: rgba(153, 153, 153, 0.06);
+            color: var(--text-muted);
+            border: 1px solid rgba(153, 153, 153, 0.12);
+        }
+
+        .etapa-badge.count {
+            background: rgba(26, 26, 26, 0.03);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        /* ========== TASKS ========== */
+        .tasks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .task-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .task-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-active);
+        }
+
+        .task-card.completed {
+            opacity: 0.45;
+        }
+
+        .task-card.completed .task-name {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .task-checkbox {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border-active);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1px;
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+
+        .task-checkbox:hover {
+            border-color: var(--accent-green);
+        }
+
+        .task-card.completed .task-checkbox {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .task-checkbox svg {
+            width: 11px;
+            height: 11px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.15s;
+        }
+
+        .task-card.completed .task-checkbox svg {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .task-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .task-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+            display: block;
+        }
+
+        .task-description {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .task-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .task-date {
+            font-size: 10px;
+            color: var(--accent-green);
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .task-card.completed .task-date {
+            opacity: 1;
+        }
+
+        .task-delete {
+            opacity: 0;
+            transition: opacity 0.15s;
+            width: 20px;
+            height: 20px;
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .task-card:hover .task-delete {
+            opacity: 0.5;
+        }
+
+        .task-delete:hover {
+            opacity: 1 !important;
+            color: var(--accent-red);
+            background: var(--accent-red-soft);
+        }
+
+        /* ========== ADD TASK BUTTON ========== */
+        .add-task-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            background: none;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        .add-task-btn:hover {
+            border-color: var(--accent-green-border);
+            color: var(--accent-green);
+            background: var(--accent-green-soft);
+        }
+
+        /* ========== ADD ETAPA BUTTON ========== */
+        .add-etapa-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 18px;
+            margin-top: 8px;
+            background: none;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        .add-etapa-btn:hover {
+            border-color: var(--accent-gold-border);
+            color: var(--accent-gold);
+            background: var(--accent-gold-soft);
+        }
+
+        /* ========== ICON BUTTONS ========== */
+        .icon-btn {
+            width: 26px;
+            height: 26px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg-card);
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--border-active);
+            color: var(--text-secondary);
+            background: var(--bg-card-hover);
+        }
+
+        .icon-btn.delete:hover {
+            color: var(--accent-red);
+            border-color: var(--accent-red-border);
+            background: var(--accent-red-soft);
+        }
+
+        /* ========== REVIEW ========== */
+        .review-card {
+            background: var(--accent-gold-soft);
+            border: 1px solid var(--accent-gold-border);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            margin-top: 8px;
+        }
+
+        .review-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+        }
+
+        .review-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* ========== FOOTER ========== */
+        .footer {
+            text-align: center;
+            padding: 40px 24px;
+            border-top: 1px solid var(--border);
+            margin-top: 48px;
+        }
+
+        .footer p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .footer a {
+            color: var(--accent-green);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* ========== TOAST ========== */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--text-primary);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ========== CONFIRM MODAL ========== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            max-width: 380px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        }
+
+        .modal h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .modal p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+
+        .modal-btn:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .modal-btn.danger {
+            background: var(--accent-red);
+            color: #fff;
+            border-color: var(--accent-red);
+        }
+
+        .modal-btn.danger:hover {
+            opacity: 0.9;
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 {
+                font-size: 22px;
+            }
+
+            .etapa-header {
+                padding: 18px;
+            }
+
+            .etapa-title {
+                font-size: 16px;
+            }
+
+            .hero-stats {
+                gap: 24px;
+            }
+
+            .hero-stat-value {
+                font-size: 26px;
+            }
+
+            .header-inner {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .header-progress {
+                text-align: center;
+            }
+
+            .progress-bar-container {
+                margin: 0 auto;
+            }
+
+            .etapa-actions {
+                opacity: 1;
+            }
+
+            .task-delete {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-inner">
+            <div class="header-brand">
+                <div class="header-logo">L</div>
+                <div>
+                    <div class="header-title">Dra. Ludmila</div>
+                    <div class="header-subtitle">Fase 01 — Detalhado</div>
+                </div>
+            </div>
+            <div class="header-progress">
+                <div class="progress-label">Progresso da Fase</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="globalProgress" style="width:0%"></div>
+                </div>
+                <div class="progress-text" id="globalProgressText">0%</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="hero-badge">Fase 01 — 1ª Entrega</div>
+            <h1>Atendimento Automático<br>com IA de Vendas</h1>
+            <p>Cada etapa abaixo leva sua clínica do zero até o bot funcionando e atendendo pacientes reais 24 horas por
+                dia.</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value gold" id="totalEtapas">0</div>
+                    <div class="hero-stat-label">Etapas</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value" id="completedTasks">0</div>
+                    <div class="hero-stat-label">Concluídas</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value" id="totalTasks">0</div>
+                    <div class="hero-stat-label">Total</div>
+                </div>
+            </div>
+        </section>
+        <div id="etapasContainer"></div>
+    </main>
+
+    <footer class="footer">
+        <p>Feito por <a href="#">André Lima</a></p>
+    </footer>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Confirm Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <h3 id="modalTitle">Confirmar</h3>
+            <p id="modalText">Tem certeza?</p>
+            <div class="modal-actions">
+                <button class="modal-btn" onclick="closeModal()">Cancelar</button>
+                <button class="modal-btn danger" id="modalConfirmBtn">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'fase01_Ludmila_v4';
+        let pendingConfirm = null;
+
+        // ============================================================
+        // DEFAULT DATA
+        // ============================================================
+        const DEFAULT_ETAPAS = [
+            {
+                id: "compra-vps", number: "ETAPA 1",
+                title: "Preparação e Compra do Servidor (VPS)",
+                subtitle: "Isolamento do ambiente do cliente, novo e-mail e compra do supercomputador na Hostinger.",
+                tasks: [
+                    { name: "Criar perfil no Chrome", desc: "Criar um perfil dedicado exclusivamente para este cliente." },
+                    { name: "Criar Gmail específico", desc: "Login: nomecliente.aicompany@gmail.com | Senha: AI!CO![data_de_aniversário]" },
+                    { name: "Configurar recuperação", desc: "Email de recuperação: andre3.14araujo@gmail.com (ou solicitar o do cliente)." },
+                    { name: "Visitar link Hostinger KVM2", desc: "Usar link de afiliado, instruir a selecionar plano de 12 ou 24 meses (apróx R$ 55,95/mês)." },
+                    { name: "Entrar com Google e assinar", desc: "Efetuar login com a conta recém-criada, preencher dados, aplicar cupom e pagar." },
+                    { name: "Configurar a Máquina Virtual", desc: "Localização: Campinas-SP, Ubuntu 22.04, escolher senha Root segura, malware detector e docker." },
+                    { name: "Anotar e enviar acessos", desc: "Anotar IP/Root, informar no grupo que a config terminou (mandar mensagem final ao cliente)." },
+                    { name: "Iniciar configuração da VPS", desc: "André assume o controle agora, não interagir mais com o painel Hostinger." },
+                ],
+                review: "Ponto de verificação: VPS comprada, online e senha Root compartilhada?"
+            },
+            {
+                id: "compra-dominio", number: "ETAPA 2",
+                title: "Compra e Configuração do Domínio",
+                subtitle: "O endereço da internet que vai apontar para seus sistemas (ex: sistema.suaclinica.com.br).",
+                tasks: [
+                    { name: "Comprar domínio (se não tiver)", desc: "Hostinger, Registro.br ou Namecheap" },
+                    { name: "Criar registro DNS para N8N", desc: "n8n.dominio.com → servidor" },
+                    { name: "Criar registro DNS para Supabase", desc: "supabase.dominio.com → servidor" },
+                    { name: "Criar registro DNS para Chatwoot", desc: "chatwoot.dominio.com → servidor" },
+                    { name: "Verificar propagação DNS", desc: "Confirmar que os endereços estão funcionando" },
+                ],
+                review: "Ponto de verificação: todos os subdomínios resolvendo para o IP correto?"
+            },
+            {
+                id: "seguranca", number: "ETAPA 3",
+                title: "Segurança do Servidor",
+                subtitle: "Trancar as portas e colocar alarme. Proteger o servidor contra invasões antes de instalar qualquer coisa.",
+                tasks: [
+                    { name: "Criar acesso seguro (chave SSH)", desc: "Senha? Não. Chave digital, muito mais segura" },
+                    { name: "Desabilitar acesso direto como administrador", desc: "Camada extra de proteção" },
+                    { name: "Configurar firewall", desc: "Só as portas necessárias ficam abertas" },
+                    { name: "Instalar proteção contra força bruta", desc: "Bloquear quem tentar invadir" },
+                    { name: "Configurar horário de Brasília", desc: "Para os logs e agendamentos estarem certos" },
+                ],
+                review: "Ponto de verificação: scan de segurança do servidor aprovado?"
+            },
+            {
+                id: "easypanel", number: "ETAPA 4",
+                title: "Instalação do Painel de Controle (EasyPanel)",
+                subtitle: "O painel visual que facilita gerenciar todos os sistemas sem precisar digitar comandos técnicos.",
+                tasks: [
+                    { name: "Instalar EasyPanel no servidor", desc: "Instalação automática com um comando" },
+                    { name: "Criar conta de administrador", desc: "Login seguro para acessar o painel" },
+                    { name: "Configurar domínio do painel", desc: "Acessar via panel.dominio.com" },
+                    { name: "Verificar certificado SSL", desc: "Cadeado verde = conexão segura" },
+                ],
+                review: "Ponto de verificação: painel acessível via HTTPS com cadeado verde?"
+            },
+            {
+                id: "n8n", number: "ETAPA 5",
+                title: "Instalação do N8N (Motor de Automação)",
+                subtitle: "O cérebro do sistema. É aqui que toda a lógica de atendimento automático funciona.",
+                tasks: [
+                    { name: "Criar projeto N8N no EasyPanel", desc: "Reservar espaço no servidor" },
+                    { name: "Configurar variáveis de segurança", desc: "Chaves de criptografia e conexões" },
+                    { name: "Configurar banco de dados", desc: "Onde o N8N guarda as informações" },
+                    { name: "Criar conta de acesso ao N8N", desc: "Login para o André gerenciar" },
+                    { name: "Testar webhook básico", desc: "Confirmar que recebe mensagens" },
+                ],
+                review: "Ponto de verificação: N8N acessível via HTTPS e recebendo webhooks?"
+            },
+            {
+                id: "supabase", number: "ETAPA 6",
+                title: "Conexão e Dashboard do Supabase",
+                subtitle: "Supabase configurado para a Ludmila conseguir acompanhar em tempo real a produção (leads, conversas).",
+                tasks: [
+                    { name: "Salvar Project URL", desc: "https://yebprrwkxowepzhbyinw.supabase.co" },
+                    { name: "Salvar Publishable Key", desc: "sb_publishable_ByyXcskyH1M7ZXRQV9C1Qg_iuHGjMV1" },
+                    { name: "Salvar Connection String", desc: "postgresql://postgres:[YOUR-PASSWORD]@db.yebprrwkxowepzhbyinw.supabase.co:5432/postgres" },
+                    { name: "Salvar Anon Key (JWT)", desc: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllYnBycndreG93ZXB6aGJ5aW53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDA5MTMsImV4cCI6MjA4ODc3NjkxM30.8mg39RLD3H-abVsttVyGJSmu4K2gvJDQX-V1ncflpdE" },
+                    { name: "Garantir acesso da Dra Ludmila", desc: "Verificar se as tabelas de leads estão visíveis pelo acesso dela" }
+                ],
+                review: "Ponto de verificação: Ludmila consegue ver os dados atualizando ao vivo?"
+            },
+            {
+                id: "chatwoot", number: "ETAPA 7",
+                title: "Instalação do Chatwoot (Painel de Conversas)",
+                subtitle: "O painel onde você pode ver todas as conversas e assumir o atendimento manualmente quando quiser.",
+                tasks: [
+                    { name: "Instalar Chatwoot no EasyPanel", desc: "Painel de atendimento" },
+                    { name: "Criar conta de administrador", desc: "Acesso para o médico acompanhar" },
+                    { name: "Criar inbox do WhatsApp", desc: "Canal de comunicação" },
+                    { name: "Configurar webhook para N8N", desc: "Chatwoot avisa o N8N quando chega mensagem" },
+                    { name: "Criar botão 'desativar IA'", desc: "Para o médico assumir a conversa" },
+                ],
+                review: "Ponto de verificação: Chatwoot recebendo mensagens e botão de assumir funcionando?"
+            },
+            {
+                id: "redis", number: "ETAPA 8",
+                title: "Instalação do Redis (Fila de Mensagens)",
+                subtitle: "Sistema inteligente que junta várias mensagens rápidas do paciente em uma só, para a IA não responder 3 vezes seguidas.",
+                tasks: [
+                    { name: "Instalar Redis no EasyPanel", desc: "Sistema de fila ultra-rápido" },
+                    { name: "Configurar senha de acesso", desc: "Proteger contra acesso indevido" },
+                    { name: "Testar conexão com N8N", desc: "N8N consegue usar o Redis" },
+                    { name: "Verificar que não está exposto na internet", desc: "Só acessível internamente" },
+                ],
+                review: "Ponto de verificação: Redis funcionando internamente e não exposto?"
+            },
+            {
+                id: "google", number: "ETAPA 9",
+                title: "Configuração do Google (Agenda)",
+                subtitle: "Conectar a agenda do Google do médico para agendamentos caírem automaticamente.",
+                tasks: [
+                    { name: "Criar projeto no Google Cloud", desc: "Plataforma de APIs do Google" },
+                    { name: "Habilitar API do Google Calendar", desc: "Permitir acesso à agenda" },
+                    { name: "Criar credenciais de acesso", desc: "ID do cliente e chave secreta" },
+                    { name: "Conectar no N8N", desc: "Autenticar e testar" },
+                    { name: "Testar criação de evento", desc: "Criar agendamento de teste na agenda" },
+                ],
+                review: "Ponto de verificação: evento de teste apareceu no Google Calendar?"
+            },
+            {
+                id: "whatsapp", number: "ETAPA 10",
+                title: "Criação da API Oficial do WhatsApp",
+                subtitle: "Conectar o número real da clínica à plataforma oficial da Meta, para enviar e receber mensagens de forma profissional.",
+                tasks: [
+                    { name: "Acessar Meta for Developers", desc: "Painel do Facebook para desenvolvedores" },
+                    { name: "Criar App tipo Business", desc: "Aplicativo que conecta ao WhatsApp" },
+                    { name: "Registrar número da clínica", desc: "Vincular o número real" },
+                    { name: "Verificar número via SMS", desc: "Código de confirmação" },
+                    { name: "Gerar token permanente", desc: "Chave de acesso que não expira" },
+                    { name: "Configurar webhook WhatsApp → Chatwoot", desc: "Mensagens chegam no painel" },
+                    { name: "Testar envio e recebimento", desc: "Mandar mensagem e verificar que chegou" },
+                ],
+                review: "Ponto de verificação: mensagem enviada do WhatsApp chega no Chatwoot e no N8N?"
+            },
+            {
+                id: "credenciais", number: "ETAPA 11",
+                title: "Configuração de Credenciais no N8N",
+                subtitle: "Conectar todos os serviços dentro do N8N para que ele possa usar tudo: WhatsApp, Google, banco de dados, IA.",
+                tasks: [
+                    { name: "Credencial OpenAI (IA)", desc: "Para o robô ter inteligência" },
+                    { name: "Credencial WhatsApp Cloud API", desc: "Enviar e receber mensagens" },
+                    { name: "Credencial Google Calendar", desc: "Criar agendamentos" },
+                    { name: "Credencial Supabase", desc: "Ler e salvar dados de pacientes" },
+                    { name: "Credencial Redis", desc: "Sistema de fila de mensagens" },
+                    { name: "Credencial Telegram (alertas)", desc: "Avisar o médico de situações urgentes" },
+                ],
+                review: "Ponto de verificação: todas as credenciais 'verdes' no N8N?"
+            },
+            {
+                id: "assets", number: "ETAPA 12",
+                title: "Coleta de Materiais da Clínica",
+                subtitle: "Pegar com a médica os materiais que a IA vai usar para atender: vídeo, fotos, preços.",
+                tasks: [
+                    { name: "Receber vídeo de apresentação", desc: "Vídeo da Dra. se apresentando (max 16MB)" },
+                    { name: "Receber tabela de preços", desc: "Valores das consultas e procedimentos" },
+                    { name: "Receber fotos de resultados", desc: "Antes/depois com autorização LGPD" },
+                    { name: "Upload do vídeo no WhatsApp", desc: "Anotar o ID do arquivo na plataforma" },
+                    { name: "Upload da tabela de preços", desc: "Anotar o ID do arquivo" },
+                    { name: "Upload das fotos", desc: "Anotar os IDs dos arquivos" },
+                ],
+                review: "Ponto de verificação: todos os media_ids anotados e funcionando?"
+            },
+            {
+                id: "prompts", number: "ETAPA 13",
+                title: "Personalização dos Textos da IA",
+                subtitle: "Fazer a IA falar como se fosse a recepcionista ideal da Dra. Ludmila — com a linguagem, tom e personalidade da clínica.",
+                tasks: [
+                    { name: "Personalizar nome e dados da clínica", desc: "Substituir em todos os textos" },
+                    { name: "Ajustar cidade, horários e valores", desc: "Informações específicas" },
+                    { name: "Personalizar cenários de qualificação", desc: "Perguntas que a IA faz ao paciente" },
+                    { name: "Configurar objeções específicas", desc: "Respostas para dúvidas comuns" },
+                    { name: "Conectar IDs dos materiais", desc: "IA sabe qual vídeo/foto enviar" },
+                ],
+                review: "Ponto de verificação: IA responde com o nome, cidade e valores corretos da Dra.?"
+            },
+            {
+                id: "deploy", number: "ETAPA 14",
+                title: "Deploy dos Workflows (Publicação)",
+                subtitle: "Colocar os robôs de atendimento no ar — importar, configurar e ativar cada fluxo.",
+                tasks: [
+                    { name: "Importar workflow principal", desc: "Agente de vendas com IA" },
+                    { name: "Importar workflow de resgate de leads", desc: "Sistema de 3 tentativas" },
+                    { name: "Importar sub-workflow de status", desc: "Atualizador de status do paciente" },
+                    { name: "Atualizar todas as credenciais", desc: "Vincular cada serviço ao workflow" },
+                    { name: "Configurar Error Workflow", desc: "Alertar por Telegram se algo der errado" },
+                    { name: "Ativar todos os workflows", desc: "Ligar os motores" },
+                ],
+                review: "Ponto de verificação: todos os workflows ativos, sem erro de credencial?"
+            },
+            {
+                id: "testes", number: "ETAPA 15",
+                title: "Testes Completos",
+                subtitle: "Simular todas as situações possíveis para garantir que tudo funciona antes de ligar para pacientes reais.",
+                tasks: [
+                    { name: "Teste: conversa completa (happy path)", desc: "Oi → nome → cenário → vídeo → agendar" },
+                    { name: "Teste: paciente com dúvidas", desc: "Perguntas fora do script" },
+                    { name: "Teste: agendamento completo", desc: "Marcar, remarcar e cancelar consulta" },
+                    { name: "Teste: enviar áudio", desc: "Paciente manda áudio → transcrição → resposta" },
+                    { name: "Teste: enviar imagem", desc: "Paciente manda foto → IA identifica" },
+                    { name: "Teste: fila de mensagens", desc: "3 mensagens rápidas → só 1 resposta" },
+                    { name: "Teste: pedir humano", desc: "Paciente quer falar com humano → alerta Telegram" },
+                    { name: "Teste: segurança (prompt injection)", desc: "Tentar enganar a IA → bloqueado" },
+                ],
+                review: "✅ GATE CRÍTICO: TODOS os testes passaram? Se não, corrigir antes de prosseguir."
+            },
+            {
+                id: "golive", number: "ETAPA 16",
+                title: "Go-Live (Ativação Real)",
+                subtitle: "O momento de ligar tudo para pacientes reais e monitorar as primeiras conversas.",
+                tasks: [
+                    { name: "Ativar webhook de produção", desc: "Conectar ao WhatsApp real" },
+                    { name: "Enviar mensagem de teste real", desc: "Do WhatsApp real mesmo" },
+                    { name: "Monitorar 5-10 primeiras conversas", desc: "Acompanhar ao vivo" },
+                    { name: "Corrigir bugs imediatos", desc: "Ajustes finos" },
+                    { name: "Fazer backup completo", desc: "Salvar tudo antes de evoluir" },
+                ],
+                review: "Ponto de verificação: bot atendendo pacientes reais sem erros."
+            },
+            {
+                id: "entrega", number: "ETAPA 17",
+                title: "Entrega Oficial (Fio de Ouro)",
+                subtitle: "Reunião formal de entrega via Google Meet. Demonstrar tudo funcionando e ensinar a Dra. a acompanhar.",
+                tasks: [
+                    { name: "Agendar reunião de entrega (Meet)", desc: "30-45 minutos com a Dra." },
+                    { name: "Demonstrar bot ao vivo", desc: "Mandar mensagem → bot responde → agenda" },
+                    { name: "Ensinar o painel de conversas (Chatwoot)", desc: "Como ver e assumir conversas" },
+                    { name: "Ensinar Google Calendar", desc: "Onde ficam os agendamentos" },
+                    { name: "Ensinar alertas do Telegram", desc: "Como funcionam as notificações" },
+                    { name: "Entregar documentação", desc: "URLs, acessos, FAQ de dúvidas" },
+                    { name: "Colher feedback da Dra.", desc: "O que gostou? O que ajustar?" },
+                ],
+                review: "✅ FASE 01 COMPLETA: Dra. confirmou que entendeu tudo e está satisfeita."
+            },
+        ];
+
+        // ============================================================
+        // STATE MANAGEMENT
+        // ============================================================
+        // ============================================================
+        // SUPABASE CONNECTION & STATE MANAGEMENT
+        // ============================================================
+        
+        const supabaseUrl = 'https://yebprrwkxowepzhbyinw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllYnBycndreG93ZXB6aGJ5aW53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDA5MTMsImV4cCI6MjA4ODc3NjkxM30.8mg39RLD3H-abVsttVyGJSmu4K2gvJDQX-V1ncflpdE'; // Usando a Anon Key para frontend
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        const RECORD_ID = 'ludmila_v1';
+        let currentData = { etapas: JSON.parse(JSON.stringify(DEFAULT_ETAPAS)), checks: {} };
+
+        async function createInitialRecord() {
+            try {
+                await supabase.from('panel_data').insert({ id: RECORD_ID, state: currentData });
+            } catch (e) {
+                console.error("Erro ao criar registro inicial", e);
+            }
+        }
+
+        async function loadDataFromSupabase() {
+            showToast("Sincronizando...");
+            const { data, error } = await supabase
+                .from('panel_data')
+                .select('state')
+                .eq('id', RECORD_ID)
+                .single();
+            
+            if (error) {
+                if(error.code === 'PGRST116') {
+                    // Registration not found, create it
+                    await createInitialRecord();
+                } else {
+                    console.error("Erro ao carregar dados do Supabase:", error);
+                    showToast("Erro de sincronização. Usando offline.");
+                    loadLocalData();
+                }
+            } else if (data && data.state) {
+                currentData = data.state;
+                // Merge with DEFAULT_ETAPAS in case definitions changed in HTML but DB is old
+                // (Keeping simple for now: DB wins for checks, but ideally we'd merge)
+            }
+            render();
+            setupRealtimeSubscription();
+        }
+
+        function loadLocalData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) currentData = JSON.parse(saved);
+            } catch { }
+            render();
+        }
+
+        async function saveData(data) {
+            currentData = data;
+            // Backup local
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            
+            // Push to Supabase
+            const { error } = await supabase
+                .from('panel_data')
+                .update({ state: data })
+                .eq('id', RECORD_ID);
+                
+            if (error) {
+                 console.error("Erro ao salvar no Supabase:", error);
+                 // if row was deleted, try to recreate
+                 if(error.code === 'PGRST116') await createInitialRecord();
+            }
+        }
+
+        function setupRealtimeSubscription() {
+            supabase
+              .channel('panel_updates')
+              .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'panel_data', filter: `id=eq.${RECORD_ID}` }, payload => {
+                  if(payload.new && payload.new.state) {
+                      currentData = payload.new.state;
+                      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentData));
+                      render();
+                      showToast('Painel atualizado ao vivo');
+                  }
+              })
+              .subscribe();
+        }
+
+        function loadData() {
+            return currentData; // Used by existing functions synchronously
+        }
+
+        // Initialize
+        loadDataFromSupabase();
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
+
+        function openModal(title, text, onConfirm) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalText').textContent = text;
+            document.getElementById('modalOverlay').classList.add('show');
+            pendingConfirm = onConfirm;
+            document.getElementById('modalConfirmBtn').onclick = () => {
+                closeModal();
+                if (pendingConfirm) pendingConfirm();
+            };
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
+            pendingConfirm = null;
+        }
+
+        // ============================================================
+        // ACTIONS
+        // ============================================================
+        function toggleTask(etapaIdx, taskIdx) {
+            const data = loadData();
+            const k = `${etapaIdx}_${taskIdx}`;
+            if (data.checks[k]) delete data.checks[k];
+            else data.checks[k] = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            saveData(data);
+            render();
+        }
+
+        function updateEtapaTitle(etapaIdx, newTitle) {
+            const data = loadData();
+            if (newTitle.trim() && data.etapas[etapaIdx]) {
+                data.etapas[etapaIdx].title = newTitle.trim();
+                saveData(data);
+                showToast('Título atualizado');
+            }
+        }
+
+        function updateEtapaSubtitle(etapaIdx, newSub) {
+            const data = loadData();
+            if (data.etapas[etapaIdx]) {
+                data.etapas[etapaIdx].subtitle = newSub.trim();
+                saveData(data);
+                showToast('Descrição atualizada');
+            }
+        }
+
+        function updateEtapaReview(etapaIdx, newReview) {
+            const data = loadData();
+            if (data.etapas[etapaIdx]) {
+                data.etapas[etapaIdx].review = newReview.trim();
+                saveData(data);
+            }
+        }
+
+        function updateTaskName(etapaIdx, taskIdx, newName) {
+            const data = loadData();
+            if (newName.trim() && data.etapas[etapaIdx] && data.etapas[etapaIdx].tasks[taskIdx]) {
+                data.etapas[etapaIdx].tasks[taskIdx].name = newName.trim();
+                saveData(data);
+                showToast('Tarefa atualizada');
+            }
+        }
+
+        function updateTaskDesc(etapaIdx, taskIdx, newDesc) {
+            const data = loadData();
+            if (data.etapas[etapaIdx] && data.etapas[etapaIdx].tasks[taskIdx]) {
+                data.etapas[etapaIdx].tasks[taskIdx].desc = newDesc.trim();
+                saveData(data);
+            }
+        }
+
+        function addTask(etapaIdx) {
+            const data = loadData();
+            if (data.etapas[etapaIdx]) {
+                data.etapas[etapaIdx].tasks.push({ name: 'Nova tarefa', desc: 'Descrição da tarefa' });
+                saveData(data);
+                render();
+                showToast('Tarefa adicionada');
+                // Focus on new task
+                setTimeout(() => {
+                    const tasks = document.querySelectorAll(`[data-etapa="${etapaIdx}"] .task-name.editable`);
+                    const last = tasks[tasks.length - 1];
+                    if (last) { last.focus(); document.execCommand('selectAll', false, null); }
+                }, 100);
+            }
+        }
+
+        function deleteTask(etapaIdx, taskIdx) {
+            const data = loadData();
+            const taskName = data.etapas[etapaIdx]?.tasks[taskIdx]?.name || 'esta tarefa';
+            openModal('Excluir tarefa', `Tem certeza que deseja excluir "${taskName}"?`, () => {
+                const d = loadData();
+                if (d.etapas[etapaIdx]) {
+                    d.etapas[etapaIdx].tasks.splice(taskIdx, 1);
+                    // Reindex checks for this etapa
+                    const newChecks = {};
+                    for (const [key, val] of Object.entries(d.checks)) {
+                        const [ei, ti] = key.split('_').map(Number);
+                        if (ei === etapaIdx) {
+                            if (ti < taskIdx) newChecks[key] = val;
+                            else if (ti > taskIdx) newChecks[`${ei}_${ti - 1}`] = val;
+                            // ti === taskIdx is deleted
+                        } else {
+                            newChecks[key] = val;
+                        }
+                    }
+                    d.checks = newChecks;
+                    saveData(d);
+                    render();
+                    showToast('Tarefa excluída');
+                }
+            });
+        }
+
+        function addEtapa() {
+            const data = loadData();
+            const num = data.etapas.length + 1;
+            data.etapas.push({
+                id: `etapa-${Date.now()}`,
+                number: `ETAPA ${num}`,
+                title: 'Nova Etapa',
+                subtitle: 'Descrição da nova etapa.',
+                tasks: [{ name: 'Primeira tarefa', desc: 'Descrição' }],
+                review: 'Ponto de verificação: o que precisa estar funcionando?'
+            });
+            saveData(data);
+            render();
+            showToast('Nova etapa adicionada');
+            setTimeout(() => {
+                const titles = document.querySelectorAll('.etapa-title.editable');
+                const last = titles[titles.length - 1];
+                if (last) { last.scrollIntoView({ behavior: 'smooth', block: 'center' }); last.focus(); document.execCommand('selectAll', false, null); }
+            }, 150);
+        }
+
+        function deleteEtapa(etapaIdx) {
+            const data = loadData();
+            const name = data.etapas[etapaIdx]?.title || 'esta etapa';
+            openModal('Excluir etapa', `Tem certeza que deseja excluir "${name}" e todas as suas tarefas?`, () => {
+                const d = loadData();
+                d.etapas.splice(etapaIdx, 1);
+                // Reindex all checks
+                const newChecks = {};
+                for (const [key, val] of Object.entries(d.checks)) {
+                    const [ei, ti] = key.split('_').map(Number);
+                    if (ei < etapaIdx) newChecks[key] = val;
+                    else if (ei > etapaIdx) newChecks[`${ei - 1}_${ti}`] = val;
+                }
+                d.checks = newChecks;
+                // Renumber
+                d.etapas.forEach((e, i) => e.number = `ETAPA ${i + 1}`);
+                saveData(d);
+                render();
+                showToast('Etapa excluída');
+            });
+        }
+
+        // ============================================================
+        // RENDER
+        // ============================================================
+        function render() {
+            const data = loadData();
+            const container = document.getElementById('etapasContainer');
+            let html = '', total = 0, done = 0;
+
+            data.etapas.forEach((etapa, ei) => {
+                let ec = 0;
+                etapa.tasks.forEach((_, ti) => { total++; if (data.checks[`${ei}_${ti}`]) { done++; ec++; } });
+                const st = ec === etapa.tasks.length ? 'completed' : ec > 0 ? 'active' : 'pending';
+                const stLabel = st === 'completed' ? '✓ Concluído' : st === 'active' ? '● Em andamento' : '○ Aguardando';
+                const stClass = `status-${st === 'completed' ? 'done' : st}`;
+
+                html += `
+                <section class="etapa-section" data-etapa="${ei}">
+                    <div class="etapa-header ${st}">
+                        <div class="etapa-top-row">
+                            <div class="etapa-number">${etapa.number}</div>
+                            <div class="etapa-actions">
+                                <button class="icon-btn delete" onclick="deleteEtapa(${ei})" title="Excluir etapa">✕</button>
+                            </div>
+                        </div>
+                        <span class="etapa-title editable" contenteditable="true"
+                            onblur="updateEtapaTitle(${ei}, this.textContent)"
+                            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${etapa.title}</span>
+                        <span class="etapa-subtitle editable" contenteditable="true"
+                            onblur="updateEtapaSubtitle(${ei}, this.textContent)"
+                            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${etapa.subtitle}</span>
+                        <div class="etapa-meta">
+                            <span class="etapa-badge ${stClass}">${stLabel}</span>
+                            <span class="etapa-badge count">${ec}/${etapa.tasks.length}</span>
+                        </div>
+                    </div>
+                    <div class="tasks-container">
+                        ${etapa.tasks.map((t, ti) => {
+                    const k = `${ei}_${ti}`, d = !!data.checks[k];
+                    return `
+                            <div class="task-card ${d ? 'completed' : ''}">
+                                <div class="task-checkbox" onclick="toggleTask(${ei},${ti})">
+                                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                </div>
+                                <div class="task-content">
+                                    <span class="task-name editable" contenteditable="true"
+                                        onblur="updateTaskName(${ei},${ti},this.textContent)"
+                                        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${t.name}</span>
+                                    <span class="task-description editable" contenteditable="true"
+                                        onblur="updateTaskDesc(${ei},${ti},this.textContent)"
+                                        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${t.desc}</span>
+                                </div>
+                                <div class="task-right">
+                                    <span class="task-date">${data.checks[k] || ''}</span>
+                                    <button class="task-delete" onclick="deleteTask(${ei},${ti})" title="Excluir tarefa">✕</button>
+                                </div>
+                            </div>`;
+                }).join('')}
+                    </div>
+                    <button class="add-task-btn" onclick="addTask(${ei})">+ Adicionar tarefa</button>
+                    <div class="review-card">
+                        <div class="review-label">🔍 Ponto de Verificação</div>
+                        <span class="review-text editable" contenteditable="true"
+                            onblur="updateEtapaReview(${ei}, this.textContent)"
+                            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${etapa.review}</span>
+                    </div>
+                </section>`;
+            });
+
+            html += `<button class="add-etapa-btn" onclick="addEtapa()">+ Adicionar nova etapa</button>`;
+
+            container.innerHTML = html;
+            document.getElementById('totalEtapas').textContent = data.etapas.length;
+            document.getElementById('totalTasks').textContent = total;
+            document.getElementById('completedTasks').textContent = done;
+            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+            document.getElementById('globalProgress').style.width = pct + '%';
+            document.getElementById('globalProgressText').textContent = pct + '%';
+        }
+
+        // Close modal on overlay click
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+
+        // Load is now async via Supabase
+        // render(); // Managed by loadDataFromSupabase
+    </script>
+</body>
+
+</html>
