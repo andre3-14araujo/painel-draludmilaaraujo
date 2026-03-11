@@ -837,7 +837,7 @@
     </div>
 
     <script>
-        const STORAGE_KEY = 'fase01_Ludmila_v5';
+        const STORAGE_KEY = 'fase01_Ludmila_v6';
         let pendingConfirm = null;
 
         // ============================================================
@@ -1271,6 +1271,19 @@
 
         // Load is now async via Supabase
         // render(); // Managed by loadDataFromSupabase
+        
+        // Export to window so inline onclick handlers can access them
+        window.toggleTask = toggleTask;
+        window.updateEtapaTitle = updateEtapaTitle;
+        window.updateEtapaSubtitle = updateEtapaSubtitle;
+        window.updateEtapaReview = updateEtapaReview;
+        window.updateTaskName = updateTaskName;
+        window.updateTaskDesc = updateTaskDesc;
+        window.addTask = addTask;
+        window.deleteTask = deleteTask;
+        window.addEtapa = addEtapa;
+        window.deleteEtapa = deleteEtapa;
+        window.closeModal = closeModal;
     </script>
 </body>
 
