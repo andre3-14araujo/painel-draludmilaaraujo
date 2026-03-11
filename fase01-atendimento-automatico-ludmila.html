@@ -914,29 +914,41 @@
         }
 
         async function loadDataFromSupabase() {
-            showToast("Sincronizando...");
-            const { data, error } = await supabase
-                .from('panel_data')
-                .select('state')
-                .eq('id', RECORD_ID)
-                .single();
-            
-            if (error) {
-                if(error.code === 'PGRST116') {
-                    // Registration not found, create it
+            showToast("Verificando nuvem...");
+            try {
+                const { data, error } = await supabase
+                    .from('panel_data')
+                    .select('state')
+                    .eq('id', RECORD_ID)
+                    .maybeSingle(); // Use maybeSingle instead of single to avoid PGRST116 when empty
+                
+                if (error) {
+                    console.warn("Aviso do Supabase:", error.message);
+                    showToast("Usando modo local (RLS ou Tabela Ausente)");
+                    loadLocalData();
+                } else if (!data) {
+                    // No record found, create one
                     await createInitialRecord();
+                    loadLocalData();
+                } else if (data && data.state) {
+                    // Record found
+                    currentData = typeof data.state === 'string' ? JSON.parse(data.state) : data.state;
+                    
+                    // Safety check to ensure the state has the right structure
+                    if (!currentData.etapas || !Array.isArray(currentData.etapas) || currentData.etapas.length === 0) {
+                        currentData.etapas = JSON.parse(JSON.stringify(DEFAULT_ETAPAS));
+                    }
+                    if (!currentData.checks) currentData.checks = {};
+                    
+                    render();
+                    setupRealtimeSubscription();
                 } else {
-                    console.error("Erro ao carregar dados do Supabase:", error);
-                    showToast("Ative acesso público no Supabase (RLS)");
+                    loadLocalData();
                 }
-                loadLocalData(); // Always fill with something (local or defaults)
-            } else if (data && data.state) {
-                currentData = data.state;
-                // Merge with DEFAULT_ETAPAS in case definitions changed in HTML but DB is old
-                // (Keeping simple for now: DB wins for checks, but ideally we'd merge)
+            } catch (err) {
+                console.error("Erro fatal ao carregar do Supabase:", err);
+                loadLocalData();
             }
-            render();
-            setupRealtimeSubscription();
         }
 
         function loadLocalData() {
